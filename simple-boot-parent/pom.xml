@@ -9,6 +9,7 @@
 
     <modules>
         <module>simple-boot-demo</module>
+        <module>simple-boot-mysql-demo</module>
         <module>simple-boot-transaction-parent</module>
     </modules>
     <name>simple-boot-parent</name>
