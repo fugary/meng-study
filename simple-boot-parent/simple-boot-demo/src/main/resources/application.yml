@@ -13,3 +13,13 @@ spring:
   h2:
     console:
       enabled: false
+logging:
+  file:
+    name: C:/simple-logs/simple-boot-demo.log
+    max-size: 100KB
+    max-history: 7
+    total-size-cap: 0MB
+  level: # level是个map，配置不同的日志名称的级别
+    root: error
+    org.springframework: info
+#  config: classpath:demo-logback.xml
