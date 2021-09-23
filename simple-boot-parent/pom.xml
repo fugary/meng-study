@@ -11,6 +11,7 @@
         <module>simple-boot-demo</module>
         <module>simple-boot-mysql-demo</module>
         <module>simple-boot-transaction-parent</module>
+        <module>simple-boot-saga-parent</module>
     </modules>
     <name>simple-boot-parent</name>
     <description>Simple parent project for Spring Boot</description>

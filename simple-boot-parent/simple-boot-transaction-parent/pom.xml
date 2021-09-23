@@ -7,13 +7,10 @@
 		<artifactId>simple-boot-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.mengstudy</groupId>
 	<artifactId>simple-boot-transaction-parent</artifactId>
 	<packaging>pom</packaging>
 	<modules>
 		<module>simple-boot-tx-db</module>
-        <module>simple-boot-tx-saga</module>
-		<module>simple-boot-tx-saga-server</module>
 	</modules>
 	<name>simple-boot-transaction-parent</name>
 	<description>Simple transaction parent project for Spring Boot</description>
