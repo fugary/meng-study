@@ -1,8 +1,11 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.core.annotation.AnnotationUtils;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.UUID;
 
@@ -74,17 +77,25 @@ public class SimpleTransactionUtils {
     }
 
     /**
-     * 创建
+     * create sub transaction
      *
+     * @param method
      * @return
      */
-    public static SubTransaction createSub() {
+    public static SubTransaction createSub(Method method, Object[] args) {
         SimpleTransactionContext currentContext = getCurrentContext();
         SubTransaction subTransaction = new SubTransaction();
         subTransaction.setStartDate(new Date());
         subTransaction.setTxId(currentContext.getTxId());
         subTransaction.setSubTxId(getUuid());
         subTransaction.setStatus(STATUS_PENDING);
+        subTransaction.setIdxNo(currentContext.getSubIndex().getAndIncrement());
+        SimpleSaga simpleSaga = AnnotationUtils.findAnnotation(method, SimpleSaga.class);
+        if (simpleSaga != null) {
+            String cancelMethod = simpleSaga.cancelMethod();
+            subTransaction.setCancelMethod(cancelMethod);
+        }
+        subTransaction.setParamClazz(method.getParameterTypes()[0].getName());
         return subTransaction;
     }
 }

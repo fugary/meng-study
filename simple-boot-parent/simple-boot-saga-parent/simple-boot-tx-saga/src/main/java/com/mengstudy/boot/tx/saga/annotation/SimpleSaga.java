@@ -7,7 +7,5 @@ package com.mengstudy.boot.tx.saga.annotation;
  */
 public @interface SimpleSaga {
 
-    String name();
-
-    String cancel();
+    String cancelMethod() default "doCancel";
 }

@@ -3,6 +3,7 @@ package com.mengstudy.boot.tx.saga.interceptor;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created on 2021/9/23 16:27 .<br>
@@ -21,4 +22,6 @@ public class SimpleTransactionContext {
     private Integer status;
 
     private String message;
+
+    private AtomicInteger subIndex = new AtomicInteger(0);
 }

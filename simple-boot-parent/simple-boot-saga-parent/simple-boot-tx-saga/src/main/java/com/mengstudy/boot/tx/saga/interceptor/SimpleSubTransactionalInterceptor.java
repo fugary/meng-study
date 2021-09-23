@@ -1,14 +1,19 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationUtils;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -27,7 +32,10 @@ public class SimpleSubTransactionalInterceptor {
 
     @Around("@annotation(SimpleSaga)")
     public Object intercept(ProceedingJoinPoint joinPoint) throws Throwable {
-        SubTransaction subTransaction = SimpleTransactionUtils.createSub();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        Object[] args = joinPoint.getArgs();
+        SubTransaction subTransaction = SimpleTransactionUtils.createSub(method, args);
         Object result = null;
         try {
             SimpleTransactionUtils.startSimpleTransaction(subTransaction);
