@@ -27,15 +27,16 @@ public class SimpleSubTransactionalInterceptor {
 
     @Around("@annotation(SimpleSaga)")
     public Object intercept(ProceedingJoinPoint joinPoint) throws Throwable {
-        SimpleTransactionContext transactionContext = SimpleTransactionUtils.getCurrentContext();
+        SubTransaction subTransaction = SimpleTransactionUtils.createSub();
         Object result = null;
         try {
-            startTransaction(transactionContext);
+            SimpleTransactionUtils.startSimpleTransaction(subTransaction);
+            startTransaction(subTransaction);
             result = joinPoint.proceed();
-            endTransaction(transactionContext, SimpleTransactionUtils.STATUS_SUCCESS);
+            endTransaction(subTransaction, SimpleTransactionUtils.STATUS_SUCCESS);
         } catch (Exception e) {
             logger.error("执行事务报错", e);
-            endTransaction(transactionContext, SimpleTransactionUtils.STATUS_FAILED);
+            endTransaction(subTransaction, SimpleTransactionUtils.STATUS_FAILED);
             throw e;
         } finally {
             SimpleTransactionUtils.endSimpleTransaction();
@@ -46,12 +47,12 @@ public class SimpleSubTransactionalInterceptor {
     /**
      * 开始事务
      *
-     * @param context
+     * @param subTransaction
      */
-    protected void startTransaction(SimpleTransactionContext context) {
+    protected void startTransaction(SubTransaction subTransaction) {
         if (simpleTransactionProvider != null) {
             try {
-                simpleTransactionProvider.startSubTransaction();
+                simpleTransactionProvider.startSubTransaction(subTransaction);
             } catch (Exception e) {
                 logger.error("[框架]:开始事务报错", e);
             }
@@ -61,15 +62,15 @@ public class SimpleSubTransactionalInterceptor {
     /**
      * 事务结束
      *
-     * @param context
+     * @param subTransaction
      * @param status
      */
-    protected void endTransaction(SimpleTransactionContext context, Integer status) {
-        context.setStatus(status);
-        context.setEndDate(new Date());
+    protected void endTransaction(SubTransaction subTransaction, Integer status) {
+        subTransaction.setStatus(status);
+        subTransaction.setEndDate(new Date());
         if (simpleTransactionProvider != null) {
             try {
-                simpleTransactionProvider.endSubTransaction();
+                simpleTransactionProvider.endSubTransaction(subTransaction);
             } catch (Exception e) {
                 logger.error("[框架]:结束事务报错", e);
             }

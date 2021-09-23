@@ -16,6 +16,8 @@ public class SimpleTransactionUtils {
 
     private static final ThreadLocal<SimpleTransactionContext> SIMPLE_TRANSACTION_CONTEXT_KEY = new ThreadLocal<>();
 
+    private static final ThreadLocal<SubTransaction> SUB_TRANSACTION_KEY = new ThreadLocal<>();
+
     public static final Integer STATUS_PENDING = 0;
 
     public static final Integer STATUS_SUCCESS = 1;
@@ -34,6 +36,19 @@ public class SimpleTransactionUtils {
 
     public static void endSimpleTransaction() {
         SIMPLE_TRANSACTION_CONTEXT_KEY.remove();
+    }
+
+
+    public static SubTransaction getSubTransaction() {
+        return SUB_TRANSACTION_KEY.get();
+    }
+
+    public static void startSubTransaction(SubTransaction subTransaction) {
+        SUB_TRANSACTION_KEY.set(subTransaction);
+    }
+
+    public static void endSubTransaction() {
+        SUB_TRANSACTION_KEY.remove();
     }
 
     /**
@@ -56,5 +71,20 @@ public class SimpleTransactionUtils {
         simpleTransactionContext.setTxId(getUuid());
         simpleTransactionContext.setStatus(STATUS_PENDING);
         return simpleTransactionContext;
+    }
+
+    /**
+     * 创建
+     *
+     * @return
+     */
+    public static SubTransaction createSub() {
+        SimpleTransactionContext currentContext = getCurrentContext();
+        SubTransaction subTransaction = new SubTransaction();
+        subTransaction.setStartDate(new Date());
+        subTransaction.setTxId(currentContext.getTxId());
+        subTransaction.setSubTxId(getUuid());
+        subTransaction.setStatus(STATUS_PENDING);
+        return subTransaction;
     }
 }

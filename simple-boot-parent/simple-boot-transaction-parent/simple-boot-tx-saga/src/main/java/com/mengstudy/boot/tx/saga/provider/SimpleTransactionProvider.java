@@ -1,6 +1,7 @@
 package com.mengstudy.boot.tx.saga.provider;
 
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
+import com.mengstudy.boot.tx.saga.interceptor.SubTransaction;
 
 /**
  * Created on 2021/9/23 16:54 .<br>
@@ -13,7 +14,7 @@ public interface SimpleTransactionProvider {
 
     void endSimpleTransaction(SimpleTransactionContext context);
 
-    void startSubTransaction();
+    void startSubTransaction(SubTransaction transaction);
 
-    void endSubTransaction();
+    void endSubTransaction(SubTransaction transaction);
 }
