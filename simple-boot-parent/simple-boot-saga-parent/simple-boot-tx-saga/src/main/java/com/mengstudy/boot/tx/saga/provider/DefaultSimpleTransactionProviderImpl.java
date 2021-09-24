@@ -1,6 +1,9 @@
 package com.mengstudy.boot.tx.saga.provider;
 
+import com.mengstudy.boot.tx.saga.dto.SagaFailedRequest;
+import com.mengstudy.boot.tx.saga.dto.SagaListResult;
 import com.mengstudy.boot.tx.saga.dto.SagaRequest;
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils;
 import com.mengstudy.boot.tx.saga.interceptor.SubTransaction;
@@ -8,6 +11,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,4 +48,15 @@ public class DefaultSimpleTransactionProviderImpl implements SimpleTransactionPr
         restTemplate.postForObject(baseUrl + "/recordSubTransaction", request, Map.class);
     }
 
+    @Override
+    public List<SagaSimpleTransaction> loadFailed(List<String> keys) {
+        SagaFailedRequest request = new SagaFailedRequest();
+        request.setKeys(keys);
+        SagaListResult result = restTemplate.postForObject(baseUrl + "/loadFailed", request, SagaListResult.class);
+        List<SagaSimpleTransaction> transactions = new ArrayList<>();
+        if (result != null && result.isSuccess()) {
+            transactions = result.getTransactions();
+        }
+        return transactions;
+    }
 }
