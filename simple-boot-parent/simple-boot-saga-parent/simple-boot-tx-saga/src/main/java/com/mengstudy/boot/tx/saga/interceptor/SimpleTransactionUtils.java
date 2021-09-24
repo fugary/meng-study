@@ -1,6 +1,7 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
 import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
+import com.mengstudy.boot.tx.saga.dto.SagaRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -97,5 +98,30 @@ public class SimpleTransactionUtils {
         }
         subTransaction.setParamClazz(method.getParameterTypes()[0].getName());
         return subTransaction;
+    }
+
+    /**
+     * 计算Request
+     *
+     * @param context
+     * @return
+     */
+    public static SagaRequest toSagaRequest(SimpleTransactionContext context) {
+        SagaRequest request = new SagaRequest();
+        request.setTxId(context.getTxId());
+        request.setStartDate(context.getStartDate());
+        request.setEndDate(context.getEndDate());
+        request.setStatus(context.getStatus());
+        request.setMessage(context.getMessage());
+        if (context instanceof SubTransaction) {
+            SubTransaction subTransaction = (SubTransaction) context;
+            request.setCancelMethod(subTransaction.getCancelMethod());
+            request.setParamClazz(subTransaction.getParamClazz());
+            request.setParamData(subTransaction.getParamData());
+            request.setSubTxId(subTransaction.getSubTxId());
+            request.setServiceName(subTransaction.getServiceName());
+            request.setServiceClazz(subTransaction.getServiceClazz());
+        }
+        return request;
     }
 }

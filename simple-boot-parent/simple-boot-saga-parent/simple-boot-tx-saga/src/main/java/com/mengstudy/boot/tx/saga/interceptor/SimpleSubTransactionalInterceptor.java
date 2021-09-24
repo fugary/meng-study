@@ -38,7 +38,7 @@ public class SimpleSubTransactionalInterceptor {
         SubTransaction subTransaction = SimpleTransactionUtils.createSub(method, args);
         Object result = null;
         try {
-            SimpleTransactionUtils.startSimpleTransaction(subTransaction);
+            SimpleTransactionUtils.startSubTransaction(subTransaction);
             startTransaction(subTransaction);
             result = joinPoint.proceed();
             endTransaction(subTransaction, SimpleTransactionUtils.STATUS_SUCCESS);
@@ -47,7 +47,7 @@ public class SimpleSubTransactionalInterceptor {
             endTransaction(subTransaction, SimpleTransactionUtils.STATUS_FAILED);
             throw e;
         } finally {
-            SimpleTransactionUtils.endSimpleTransaction();
+            SimpleTransactionUtils.endSubTransaction();
         }
         return result;
     }
