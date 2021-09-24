@@ -1,11 +1,15 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
 import com.mengstudy.boot.tx.saga.dto.SagaRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.UUID;
@@ -17,6 +21,8 @@ import java.util.UUID;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SimpleTransactionUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleTransactionUtils.class);
 
     private static final ThreadLocal<SimpleTransactionContext> SIMPLE_TRANSACTION_CONTEXT_KEY = new ThreadLocal<>();
 
@@ -123,5 +129,41 @@ public class SimpleTransactionUtils {
             request.setServiceClazz(subTransaction.getServiceClazz());
         }
         return request;
+    }
+
+    /**
+     * 转换成Json
+     *
+     * @param mapper
+     * @param target
+     * @return
+     */
+    public static String toJson(ObjectMapper mapper, Object target) {
+        String result = "";
+        try {
+            result = mapper.writeValueAsString(target);
+        } catch (IOException e) {
+            logger.error("将对象转换成Json出错", e);
+        }
+        return result;
+    }
+
+    /**
+     * 解析Json成对象
+     *
+     * @param mapper
+     * @param json
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public static <T> T fromJson(ObjectMapper mapper, String json, Class<T> clazz) {
+        T result = null;
+        try {
+            result = mapper.readValue(json, clazz);
+        } catch (IOException e) {
+            logger.error("将Json转成对象报错", e);
+        }
+        return result;
     }
 }

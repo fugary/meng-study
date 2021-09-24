@@ -38,14 +38,9 @@ public class DefaultSimpleTransactionProviderImpl implements SimpleTransactionPr
     }
 
     @Override
-    public void startSubTransaction(SubTransaction transaction) {
+    public void recordSubTransaction(SubTransaction transaction) {
         SagaRequest request = SimpleTransactionUtils.toSagaRequest(transaction);
-        restTemplate.postForObject(baseUrl + "/startSubTransaction", request, Map.class);
+        restTemplate.postForObject(baseUrl + "/recordSubTransaction", request, Map.class);
     }
 
-    @Override
-    public void endSubTransaction(SubTransaction transaction) {
-        SagaRequest request = SimpleTransactionUtils.toSagaRequest(transaction);
-        restTemplate.postForObject(baseUrl + "/endSubTransaction", request, Map.class);
-    }
 }

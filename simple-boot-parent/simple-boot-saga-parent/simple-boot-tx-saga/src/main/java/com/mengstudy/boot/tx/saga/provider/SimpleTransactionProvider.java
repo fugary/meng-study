@@ -14,7 +14,6 @@ public interface SimpleTransactionProvider {
 
     void endSimpleTransaction(SimpleTransactionContext context);
 
-    void startSubTransaction(SubTransaction transaction);
+    void recordSubTransaction(SubTransaction transaction);
 
-    void endSubTransaction(SubTransaction transaction);
 }
