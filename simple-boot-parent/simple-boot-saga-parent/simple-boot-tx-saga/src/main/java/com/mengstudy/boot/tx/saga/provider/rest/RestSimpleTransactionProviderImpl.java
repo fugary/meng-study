@@ -62,7 +62,12 @@ public class RestSimpleTransactionProviderImpl implements SimpleTransactionProvi
     }
 
     @Override
-    public void markTransactionCanceled(SimpleTransactionContext context) {
+    public void cancelSimpleTransaction(SagaSimpleTransaction simpleTransaction) {
+
+    }
+
+    @Override
+    public void markTransactionCanceled(SagaSimpleTransaction simpleTransaction) {
 
     }
 }

@@ -73,6 +73,7 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
                         simpleSagaMeta.setMethodKey(SimpleTransactionUtils.getMethodKey(method));
                         simpleSagaMeta.setCancelMethod(simpleSaga.cancelMethod());
                         simpleSagaMeta.setName(simpleSaga.name());
+                        simpleSagaMeta.setTargetBean(bean);
                         SimpleTransactionMetaHelper.addSagaMeta(simpleSagaMeta);
                     }
                 });

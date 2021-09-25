@@ -21,4 +21,6 @@ public class SimpleSagaMeta {
 
     private String cancelMethod;
 
+    private Object targetBean;
+
 }

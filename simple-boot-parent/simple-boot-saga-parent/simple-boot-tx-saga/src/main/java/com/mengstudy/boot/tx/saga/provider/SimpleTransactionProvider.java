@@ -21,5 +21,7 @@ public interface SimpleTransactionProvider {
 
     List<SagaSimpleTransaction> loadFailed(List<String> keys);
 
-    void markTransactionCanceled(SimpleTransactionContext context);
+    void cancelSimpleTransaction(SagaSimpleTransaction simpleTransaction);
+
+    void markTransactionCanceled(SagaSimpleTransaction simpleTransaction);
 }

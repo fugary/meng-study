@@ -19,6 +19,8 @@ public class SagaSimpleSubTransaction extends BaseSimpleTransaction {
 
     private String serviceClazz;
 
+    private String methodKey;
+
     private String paramClazz;
 
     private String paramData;

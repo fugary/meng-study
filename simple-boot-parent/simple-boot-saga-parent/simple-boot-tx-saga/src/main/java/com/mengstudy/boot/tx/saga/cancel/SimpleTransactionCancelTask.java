@@ -33,6 +33,7 @@ public class SimpleTransactionCancelTask implements Runnable {
         List<SagaSimpleTransaction> transactions = simpleTransactionProvider.loadFailed(new ArrayList<>(transactionKeys));
         for (SagaSimpleTransaction transaction : transactions) {
             // 回滚事务
+            simpleTransactionProvider.cancelSimpleTransaction(transaction);
         }
     }
 }

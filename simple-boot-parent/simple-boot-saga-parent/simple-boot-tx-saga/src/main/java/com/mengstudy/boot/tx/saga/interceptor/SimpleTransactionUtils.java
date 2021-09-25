@@ -140,6 +140,7 @@ public class SimpleTransactionUtils {
         SimpleSagaMeta sageMeta = SimpleTransactionMetaHelper.getSageMeta(txKey, methodKey);
         sagaSubTransaction.setServiceName(sageMeta.getServiceName());
         sagaSubTransaction.setServiceClazz(sageMeta.getServiceClass());
+        sagaSubTransaction.setMethodKey(sageMeta.getMethodKey());
         sagaSubTransaction.setCancelMethod(sageMeta.getCancelMethod());
         List<String> typeList = Arrays.stream(method.getParameterTypes()).map(Class::getName).collect(Collectors.toList());
         sagaSubTransaction.setParamClazz(toJson(typeList));
