@@ -2,7 +2,10 @@ package com.mengstudy.boot.tx.saga.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
+import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
 import com.mengstudy.boot.tx.saga.dto.SagaRequest;
+import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
+import com.mengstudy.boot.tx.saga.meta.SimpleTransactionMetaHelper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
@@ -70,16 +73,30 @@ public class SimpleTransactionUtils {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    public static <T> String getTxKey(Class<T> clazz, Method method) {
+        return clazz.getName() + "#" + method.getName();
+    }
+
+    public static <T> String getMethodKey(Method method) {
+        StringBuilder sb = new StringBuilder(method.getName());
+        for (Class<?> parameterType : method.getParameterTypes()) {
+            sb.append("$").append(parameterType.getName());
+        }
+        return sb.toString();
+    }
+
     /**
      * 创建
      *
      * @return
      */
-    public static SimpleTransactionContext create() {
+    public static SimpleTransactionContext create(SimpleTransactional simpleTransactional, String txKey) {
         SimpleTransactionContext simpleTransactionContext = new SimpleTransactionContext();
         simpleTransactionContext.setStartDate(new Date());
         simpleTransactionContext.setTxId(getUuid());
+        simpleTransactionContext.setTxKey(txKey);
         simpleTransactionContext.setStatus(STATUS_PENDING);
+        simpleTransactionContext.setTxName(simpleTransactional.name());
         return simpleTransactionContext;
     }
 
@@ -89,7 +106,7 @@ public class SimpleTransactionUtils {
      * @param method
      * @return
      */
-    public static SubTransaction createSub(Method method, Object[] args) {
+    public static <T> SubTransaction createSub(Class<T> targetClass, Method method, Object[] args) {
         SimpleTransactionContext currentContext = getCurrentContext();
         SubTransaction subTransaction = new SubTransaction();
         subTransaction.setStartDate(new Date());
@@ -97,12 +114,13 @@ public class SimpleTransactionUtils {
         subTransaction.setSubTxId(getUuid());
         subTransaction.setStatus(STATUS_PENDING);
         subTransaction.setIdxNo(currentContext.getSubIndex().getAndIncrement());
-        SimpleSaga simpleSaga = AnnotationUtils.findAnnotation(method, SimpleSaga.class);
-        if (simpleSaga != null) {
-            String cancelMethod = simpleSaga.cancelMethod();
-            subTransaction.setCancelMethod(cancelMethod);
-        }
-        subTransaction.setParamClazz(method.getParameterTypes()[0].getName());
+        String txKey = getTxKey(targetClass, method);
+        subTransaction.setTxKey(txKey);
+        String methodKey = getMethodKey(method);
+        SimpleSagaMeta sageMeta = SimpleTransactionMetaHelper.getSageMeta(txKey, methodKey);
+        subTransaction.setServiceName(sageMeta.getServiceName());
+        subTransaction.setServiceClazz(sageMeta.getServiceClass());
+        subTransaction.setCancelMethod(sageMeta.getCancelMethod());
         return subTransaction;
     }
 
@@ -115,6 +133,8 @@ public class SimpleTransactionUtils {
     public static SagaRequest toSagaRequest(SimpleTransactionContext context) {
         SagaRequest request = new SagaRequest();
         request.setTxId(context.getTxId());
+        request.setTxKey(context.getTxKey());
+        request.setTxName(context.getTxName());
         request.setStartDate(context.getStartDate());
         request.setEndDate(context.getEndDate());
         request.setStatus(context.getStatus());

@@ -14,5 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface SimpleSaga {
 
-    String cancelMethod() default "doCancel";
+    String name() default "";
+
+    String cancelMethod();
 }

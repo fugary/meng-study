@@ -1,14 +1,19 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.core.annotation.AnnotationUtils;
 
+import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -25,9 +30,14 @@ public class SimpleTransactionalInterceptor {
     @Setter
     private SimpleTransactionProvider simpleTransactionProvider;
 
-    @Around("@annotation(SimpleTransactional)")
+    @Around("@annotation(com.mengstudy.boot.tx.saga.annotation.SimpleTransactional)")
     public Object intercept(ProceedingJoinPoint joinPoint) throws Throwable {
-        SimpleTransactionContext transactionContext = SimpleTransactionUtils.create();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        SimpleTransactional simpleTransactional = AnnotationUtils.findAnnotation(method, SimpleTransactional.class);
+        Class<?> targetClass = AopUtils.getTargetClass(joinPoint.getTarget());
+        String txKey = SimpleTransactionUtils.getTxKey(targetClass, method);
+        SimpleTransactionContext transactionContext = SimpleTransactionUtils.create(simpleTransactional, txKey);
         SimpleTransactionUtils.startSimpleTransaction(transactionContext);
         Object result = null;
         try {

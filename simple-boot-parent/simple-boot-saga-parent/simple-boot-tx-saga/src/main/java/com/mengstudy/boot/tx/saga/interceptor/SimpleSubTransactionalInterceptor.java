@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.support.AopUtils;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -32,12 +33,13 @@ public class SimpleSubTransactionalInterceptor {
     @Setter
     private ObjectMapper objectMapper;
 
-    @Around("@annotation(SimpleSaga)")
+    @Around("@annotation(com.mengstudy.boot.tx.saga.annotation.SimpleSaga)")
     public Object intercept(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Object[] args = joinPoint.getArgs();
-        SubTransaction subTransaction = SimpleTransactionUtils.createSub(method, args);
+        Class<?> targetClass = AopUtils.getTargetClass(joinPoint.getTarget());
+        SubTransaction subTransaction = SimpleTransactionUtils.createSub(targetClass, method, args);
         Object result = null;
         try {
             SimpleTransactionUtils.startSubTransaction(subTransaction);

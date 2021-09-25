@@ -17,6 +17,8 @@ public class SimpleTransactionContext {
 
     private String txKey;
 
+    private String txName;
+
     private Date startDate;
 
     private Date endDate;

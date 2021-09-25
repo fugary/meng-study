@@ -13,6 +13,7 @@
     <modules>
         <module>simple-boot-tx-saga</module>
         <module>simple-boot-tx-saga-server</module>
+        <module>simple-boot-tx-saga-demo</module>
     </modules>
 
     <properties>

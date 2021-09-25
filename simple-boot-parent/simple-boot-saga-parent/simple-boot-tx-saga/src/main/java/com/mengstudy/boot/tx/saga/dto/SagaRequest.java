@@ -17,6 +17,10 @@ public class SagaRequest implements Serializable {
 
     private String subTxId;
 
+    private String txKey;
+
+    private String txName;
+
     private Date startDate;
 
     private Date endDate;
