@@ -1,21 +1,27 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
 import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
-import com.mengstudy.boot.tx.saga.dto.SagaRequest;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaRequest;
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaSubRequest;
 import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
 import com.mengstudy.boot.tx.saga.meta.SimpleTransactionMetaHelper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created on 2021/9/23 16:26 .<br>
@@ -29,7 +35,7 @@ public class SimpleTransactionUtils {
 
     private static final ThreadLocal<SimpleTransactionContext> SIMPLE_TRANSACTION_CONTEXT_KEY = new ThreadLocal<>();
 
-    private static final ThreadLocal<SubTransaction> SUB_TRANSACTION_KEY = new ThreadLocal<>();
+    private static final ThreadLocal<SubTransactionContext> SUB_TRANSACTION_KEY = new ThreadLocal<>();
 
     public static final Integer STATUS_PENDING = 0;
 
@@ -38,6 +44,17 @@ public class SimpleTransactionUtils {
     public static final Integer STATUS_FAILED = 2;
 
     public static final Integer STATUS_TIMEOUT = 3;
+
+    public static final Integer STATUS_CANCELED = 9;
+
+    private static final ObjectMapper objectMapper;
+
+    static {
+        objectMapper = Jackson2ObjectMapperBuilder.json()
+                .serializationInclusion(JsonInclude.Include.NON_NULL)
+                .failOnUnknownProperties(false)
+                .build();
+    }
 
     public static SimpleTransactionContext getCurrentContext() {
         return SIMPLE_TRANSACTION_CONTEXT_KEY.get();
@@ -52,12 +69,12 @@ public class SimpleTransactionUtils {
     }
 
 
-    public static SubTransaction getSubTransaction() {
+    public static SubTransactionContext getSubTransaction() {
         return SUB_TRANSACTION_KEY.get();
     }
 
-    public static void startSubTransaction(SubTransaction subTransaction) {
-        SUB_TRANSACTION_KEY.set(subTransaction);
+    public static void startSubTransaction(SubTransactionContext subTransactionContext) {
+        SUB_TRANSACTION_KEY.set(subTransactionContext);
     }
 
     public static void endSubTransaction() {
@@ -77,7 +94,7 @@ public class SimpleTransactionUtils {
         return clazz.getName() + "#" + method.getName();
     }
 
-    public static <T> String getMethodKey(Method method) {
+    public static String getMethodKey(Method method) {
         StringBuilder sb = new StringBuilder(method.getName());
         for (Class<?> parameterType : method.getParameterTypes()) {
             sb.append("$").append(parameterType.getName());
@@ -92,11 +109,13 @@ public class SimpleTransactionUtils {
      */
     public static SimpleTransactionContext create(SimpleTransactional simpleTransactional, String txKey) {
         SimpleTransactionContext simpleTransactionContext = new SimpleTransactionContext();
-        simpleTransactionContext.setStartDate(new Date());
-        simpleTransactionContext.setTxId(getUuid());
-        simpleTransactionContext.setTxKey(txKey);
-        simpleTransactionContext.setStatus(STATUS_PENDING);
-        simpleTransactionContext.setTxName(simpleTransactional.name());
+        SagaSimpleTransaction transaction = new SagaSimpleTransaction();
+        transaction.setStartDate(new Date());
+        transaction.setTxId(getUuid());
+        transaction.setTxKey(txKey);
+        transaction.setStatus(STATUS_PENDING);
+        transaction.setTxName(simpleTransactional.name());
+        simpleTransactionContext.setTransaction(transaction);
         return simpleTransactionContext;
     }
 
@@ -106,22 +125,30 @@ public class SimpleTransactionUtils {
      * @param method
      * @return
      */
-    public static <T> SubTransaction createSub(Class<T> targetClass, Method method, Object[] args) {
+    public static <T> SubTransactionContext createSub(Class<T> targetClass, Method method, Object[] args) {
         SimpleTransactionContext currentContext = getCurrentContext();
-        SubTransaction subTransaction = new SubTransaction();
-        subTransaction.setStartDate(new Date());
-        subTransaction.setTxId(currentContext.getTxId());
-        subTransaction.setSubTxId(getUuid());
-        subTransaction.setStatus(STATUS_PENDING);
-        subTransaction.setIdxNo(currentContext.getSubIndex().getAndIncrement());
+        SagaSimpleTransaction transaction = currentContext.getTransaction();
+        SagaSimpleSubTransaction sagaSubTransaction = new SagaSimpleSubTransaction();
+        sagaSubTransaction.setStartDate(new Date());
+        sagaSubTransaction.setTxId(transaction.getTxId());
+        sagaSubTransaction.setSubTxId(getUuid());
+        sagaSubTransaction.setStatus(STATUS_PENDING);
+        sagaSubTransaction.setIdxNo(currentContext.getSubIndex().getAndIncrement());
         String txKey = getTxKey(targetClass, method);
-        subTransaction.setTxKey(txKey);
+        sagaSubTransaction.setTxKey(txKey);
         String methodKey = getMethodKey(method);
         SimpleSagaMeta sageMeta = SimpleTransactionMetaHelper.getSageMeta(txKey, methodKey);
-        subTransaction.setServiceName(sageMeta.getServiceName());
-        subTransaction.setServiceClazz(sageMeta.getServiceClass());
-        subTransaction.setCancelMethod(sageMeta.getCancelMethod());
-        return subTransaction;
+        sagaSubTransaction.setServiceName(sageMeta.getServiceName());
+        sagaSubTransaction.setServiceClazz(sageMeta.getServiceClass());
+        sagaSubTransaction.setCancelMethod(sageMeta.getCancelMethod());
+        List<String> typeList = Arrays.stream(method.getParameterTypes()).map(Class::getName).collect(Collectors.toList());
+        sagaSubTransaction.setParamClazz(toJson(typeList));
+        List<String> dataList = Arrays.stream(args).map(SimpleTransactionUtils::toJson).collect(Collectors.toList());
+        sagaSubTransaction.setParamData(toJson(dataList));
+        SubTransactionContext subTransactionContext = new SubTransactionContext();
+        subTransactionContext.setTransaction(transaction);
+        subTransactionContext.setSagaTransaction(sagaSubTransaction);
+        return subTransactionContext;
     }
 
     /**
@@ -131,23 +158,22 @@ public class SimpleTransactionUtils {
      * @return
      */
     public static SagaRequest toSagaRequest(SimpleTransactionContext context) {
+        SagaSimpleTransaction transaction = context.getTransaction();
         SagaRequest request = new SagaRequest();
-        request.setTxId(context.getTxId());
-        request.setTxKey(context.getTxKey());
-        request.setTxName(context.getTxName());
-        request.setStartDate(context.getStartDate());
-        request.setEndDate(context.getEndDate());
-        request.setStatus(context.getStatus());
-        request.setMessage(context.getMessage());
-        if (context instanceof SubTransaction) {
-            SubTransaction subTransaction = (SubTransaction) context;
-            request.setCancelMethod(subTransaction.getCancelMethod());
-            request.setParamClazz(subTransaction.getParamClazz());
-            request.setParamData(subTransaction.getParamData());
-            request.setSubTxId(subTransaction.getSubTxId());
-            request.setServiceName(subTransaction.getServiceName());
-            request.setServiceClazz(subTransaction.getServiceClazz());
-        }
+        request.setTransaction(transaction);
+        return request;
+    }
+
+    /**
+     * 计算Request
+     *
+     * @param context
+     * @return
+     */
+    public static SagaSubRequest toSagaSubRequest(SubTransactionContext context) {
+        SagaSubRequest request = new SagaSubRequest();
+        request.setTransaction(context.getTransaction());
+        request.setSubTransaction(context.getSagaTransaction());
         return request;
     }
 
@@ -158,10 +184,10 @@ public class SimpleTransactionUtils {
      * @param target
      * @return
      */
-    public static String toJson(ObjectMapper mapper, Object target) {
+    public static String toJson(Object target) {
         String result = "";
         try {
-            result = mapper.writeValueAsString(target);
+            result = objectMapper.writeValueAsString(target);
         } catch (IOException e) {
             logger.error("将对象转换成Json出错", e);
         }
@@ -177,10 +203,10 @@ public class SimpleTransactionUtils {
      * @param <T>
      * @return
      */
-    public static <T> T fromJson(ObjectMapper mapper, String json, Class<T> clazz) {
+    public static <T> T fromJson(String json, Class<T> clazz) {
         T result = null;
         try {
-            result = mapper.readValue(json, clazz);
+            result = objectMapper.readValue(json, clazz);
         } catch (IOException e) {
             logger.error("将Json转成对象报错", e);
         }

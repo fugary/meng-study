@@ -26,6 +26,6 @@ public class DemoService {
     public String doSomething() {
         demoService1.demo1();
         demoService2.demo2();
-        return null;
+        return "hello world";
     }
 }

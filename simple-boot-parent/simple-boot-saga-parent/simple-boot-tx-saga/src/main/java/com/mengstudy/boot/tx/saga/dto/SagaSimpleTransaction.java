@@ -1,14 +1,15 @@
 package com.mengstudy.boot.tx.saga.dto;
 
-import java.io.Serializable;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Created on 2021/9/24 13:22 .<br>
  *
  * @author gary.fu
  */
-public class SagaSimpleTransaction implements Serializable {
-
-    private static final long serialVersionUID = 1521500038528149553L;
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class SagaSimpleTransaction extends BaseSimpleTransaction {
 
 }

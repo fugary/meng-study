@@ -1,6 +1,7 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
 import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
@@ -76,8 +77,9 @@ public class SimpleTransactionalInterceptor {
      * @param status
      */
     protected void endTransaction(SimpleTransactionContext context, Integer status) {
-        context.setStatus(status);
-        context.setEndDate(new Date());
+        SagaSimpleTransaction transaction = context.getTransaction();
+        transaction.setStatus(status);
+        transaction.setEndDate(new Date());
         if (simpleTransactionProvider != null) {
             try {
                 simpleTransactionProvider.endSimpleTransaction(context);

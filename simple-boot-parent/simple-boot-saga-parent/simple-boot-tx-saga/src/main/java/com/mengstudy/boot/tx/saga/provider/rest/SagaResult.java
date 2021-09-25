@@ -1,4 +1,4 @@
-package com.mengstudy.boot.tx.saga.dto;
+package com.mengstudy.boot.tx.saga.provider.rest;
 
 import lombok.Data;
 

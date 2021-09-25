@@ -1,6 +1,6 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,25 +29,21 @@ public class SimpleSubTransactionalInterceptor {
     @Setter
     private SimpleTransactionProvider simpleTransactionProvider;
 
-    @Getter
-    @Setter
-    private ObjectMapper objectMapper;
-
     @Around("@annotation(com.mengstudy.boot.tx.saga.annotation.SimpleSaga)")
     public Object intercept(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Object[] args = joinPoint.getArgs();
         Class<?> targetClass = AopUtils.getTargetClass(joinPoint.getTarget());
-        SubTransaction subTransaction = SimpleTransactionUtils.createSub(targetClass, method, args);
+        SubTransactionContext subTransactionContext = SimpleTransactionUtils.createSub(targetClass, method, args);
         Object result = null;
         try {
-            SimpleTransactionUtils.startSubTransaction(subTransaction);
+            SimpleTransactionUtils.startSubTransaction(subTransactionContext);
             result = joinPoint.proceed();
-            endSubTransaction(subTransaction, SimpleTransactionUtils.STATUS_SUCCESS);
+            endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_SUCCESS);
         } catch (Exception e) {
             logger.error("执行事务报错", e);
-            endSubTransaction(subTransaction, SimpleTransactionUtils.STATUS_FAILED);
+            endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_FAILED);
             throw e;
         } finally {
             SimpleTransactionUtils.endSubTransaction();
@@ -58,15 +54,16 @@ public class SimpleSubTransactionalInterceptor {
     /**
      * 事务结束
      *
-     * @param subTransaction
+     * @param subTransactionContext
      * @param status
      */
-    protected void endSubTransaction(SubTransaction subTransaction, Integer status) {
-        subTransaction.setStatus(status);
-        subTransaction.setEndDate(new Date());
+    protected void endSubTransaction(SubTransactionContext subTransactionContext, Integer status) {
+        SagaSimpleSubTransaction sagaTransaction = subTransactionContext.getSagaTransaction();
+        sagaTransaction.setStatus(status);
+        sagaTransaction.setEndDate(new Date());
         if (simpleTransactionProvider != null) {
             try {
-                simpleTransactionProvider.recordSubTransaction(subTransaction);
+                simpleTransactionProvider.recordSubTransaction(subTransactionContext);
             } catch (Exception e) {
                 logger.error("[框架]:结束事务报错", e);
             }

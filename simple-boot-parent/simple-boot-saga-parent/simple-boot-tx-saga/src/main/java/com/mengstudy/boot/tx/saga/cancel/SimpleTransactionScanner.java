@@ -43,6 +43,10 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
 
     @Getter
     @Setter
+    private long period = 30L;
+
+    @Getter
+    @Setter
     private SimpleTransactionCancelTask simpleTransactionCancelTask;
 
     @Override
@@ -81,7 +85,7 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
     protected synchronized void addOrInitCancelTask(Set<String> transactionKeys) {
         if (simpleTransactionCancelTask == null) {
             simpleTransactionCancelTask = new SimpleTransactionCancelTask(simpleTransactionProvider, new ConcurrentSkipListSet<>());
-            scheduledExecutorService.schedule(simpleTransactionCancelTask, getDelayTime(), TimeUnit.SECONDS);
+            scheduledExecutorService.scheduleAtFixedRate(simpleTransactionCancelTask, getDelayTime(), getPeriod(), TimeUnit.SECONDS);
         }
         simpleTransactionCancelTask.getTransactionKeys().addAll(transactionKeys);
     }

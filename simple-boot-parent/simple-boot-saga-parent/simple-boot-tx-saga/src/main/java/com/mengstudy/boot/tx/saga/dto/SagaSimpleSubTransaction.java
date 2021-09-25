@@ -1,16 +1,15 @@
-package com.mengstudy.boot.tx.saga.interceptor;
+package com.mengstudy.boot.tx.saga.dto;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * Created on 2021/9/23 17:28 .<br>
- *
- * @author gary.fu
+ * @author Gary Fu
+ * @date 2021/9/25 19:33
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class SubTransaction extends SimpleTransactionContext {
+@EqualsAndHashCode(callSuper = true)
+public class SagaSimpleSubTransaction extends BaseSimpleTransaction {
 
     private String subTxId;
 
@@ -25,4 +24,5 @@ public class SubTransaction extends SimpleTransactionContext {
     private String paramData;
 
     private String cancelMethod;
+
 }

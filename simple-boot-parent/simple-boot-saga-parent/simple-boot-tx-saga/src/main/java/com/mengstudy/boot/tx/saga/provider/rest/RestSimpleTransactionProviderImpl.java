@@ -1,12 +1,13 @@
-package com.mengstudy.boot.tx.saga.provider;
+package com.mengstudy.boot.tx.saga.provider.rest;
 
-import com.mengstudy.boot.tx.saga.dto.SagaFailedRequest;
-import com.mengstudy.boot.tx.saga.dto.SagaListResult;
-import com.mengstudy.boot.tx.saga.dto.SagaRequest;
+import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaFailedRequest;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaListResult;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaRequest;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils;
-import com.mengstudy.boot.tx.saga.interceptor.SubTransaction;
+import com.mengstudy.boot.tx.saga.interceptor.SubTransactionContext;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.client.RestTemplate;
@@ -20,7 +21,7 @@ import java.util.Map;
  *
  * @author gary.fu
  */
-public class DefaultSimpleTransactionProviderImpl implements SimpleTransactionProvider {
+public class RestSimpleTransactionProviderImpl implements SimpleTransactionProvider {
 
     @Getter
     @Setter
@@ -43,8 +44,8 @@ public class DefaultSimpleTransactionProviderImpl implements SimpleTransactionPr
     }
 
     @Override
-    public void recordSubTransaction(SubTransaction transaction) {
-        SagaRequest request = SimpleTransactionUtils.toSagaRequest(transaction);
+    public void recordSubTransaction(SubTransactionContext transaction) {
+        SagaRequest request = SimpleTransactionUtils.toSagaSubRequest(transaction);
         restTemplate.postForObject(baseUrl + "/recordSubTransaction", request, Map.class);
     }
 
@@ -58,5 +59,10 @@ public class DefaultSimpleTransactionProviderImpl implements SimpleTransactionPr
             transactions = result.getTransactions();
         }
         return transactions;
+    }
+
+    @Override
+    public void markTransactionCanceled(SimpleTransactionContext context) {
+
     }
 }

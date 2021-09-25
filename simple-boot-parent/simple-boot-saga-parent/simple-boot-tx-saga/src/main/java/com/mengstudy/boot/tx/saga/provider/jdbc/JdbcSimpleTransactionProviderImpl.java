@@ -1,8 +1,9 @@
-package com.mengstudy.boot.tx.saga.provider;
+package com.mengstudy.boot.tx.saga.provider.jdbc;
 
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
-import com.mengstudy.boot.tx.saga.interceptor.SubTransaction;
+import com.mengstudy.boot.tx.saga.interceptor.SubTransactionContext;
+import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,7 +36,7 @@ public class JdbcSimpleTransactionProviderImpl implements SimpleTransactionProvi
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void recordSubTransaction(SubTransaction transaction) {
+    public void recordSubTransaction(SubTransactionContext transaction) {
 
     }
 
@@ -43,5 +44,10 @@ public class JdbcSimpleTransactionProviderImpl implements SimpleTransactionProvi
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<SagaSimpleTransaction> loadFailed(List<String> keys) {
         return null;
+    }
+
+    @Override
+    public void markTransactionCanceled(SimpleTransactionContext context) {
+
     }
 }

@@ -6,16 +6,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Created on 2021/9/23 16:20 .<br>
+ * Created on 2021/9/24 13:22 .<br>
  *
  * @author gary.fu
  */
 @Data
-public class SagaRequest implements Serializable {
+public class BaseSimpleTransaction implements Serializable {
 
     private String txId;
-
-    private String subTxId;
 
     private String txKey;
 
@@ -28,15 +26,5 @@ public class SagaRequest implements Serializable {
     private Integer status;
 
     private String message;
-
-    private String serviceName;
-
-    private String serviceClazz;
-
-    private String paramClazz;
-
-    private String paramData;
-
-    private String cancelMethod;
 
 }

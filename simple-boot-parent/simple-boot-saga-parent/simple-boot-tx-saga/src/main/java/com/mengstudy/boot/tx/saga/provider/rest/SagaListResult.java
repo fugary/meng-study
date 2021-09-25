@@ -1,5 +1,6 @@
-package com.mengstudy.boot.tx.saga.dto;
+package com.mengstudy.boot.tx.saga.provider.rest;
 
+import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import lombok.Data;
 
 import java.util.List;
