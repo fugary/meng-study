@@ -38,7 +38,7 @@
         </dependency>
         <dependency>
             <groupId>com.mengstudy</groupId>
-            <artifactId>simple-boot-tx-saga</artifactId>
+            <artifactId>simple-boot-tx-saga-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

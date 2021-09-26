@@ -20,6 +20,10 @@ public abstract class AbstractSimpleTransactionProvider implements SimpleTransac
 
     @Getter
     @Setter
+    private Integer pageSize;
+
+    @Getter
+    @Setter
     protected SimpleTransactionCancelProvider simpleTransactionCancelProvider;
 
     protected boolean cancelSimpleTransaction(SagaSimpleTransaction transaction, List<SagaSimpleSubTransaction> subTransactions) {

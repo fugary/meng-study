@@ -3,7 +3,7 @@ package com.mengstudy.boot.tx.saga.provider.jdbc;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
 import com.mengstudy.boot.tx.saga.interceptor.SubTransactionContext;
-import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
+import com.mengstudy.boot.tx.saga.provider.AbstractSimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author Gary Fu
  * @date 2021/9/25 12:21
  */
-public class JdbcSimpleTransactionProviderImpl implements SimpleTransactionProvider {
+public class JdbcSimpleTransactionProviderImpl extends AbstractSimpleTransactionProvider {
 
     @Getter
     @Setter

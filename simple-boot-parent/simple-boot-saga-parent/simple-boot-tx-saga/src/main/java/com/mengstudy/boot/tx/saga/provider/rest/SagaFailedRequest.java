@@ -16,4 +16,6 @@ public class SagaFailedRequest implements Serializable {
     private static final long serialVersionUID = -4110519265964035657L;
 
     private List<String> keys;
+
+    private Integer pageSize;
 }

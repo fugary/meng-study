@@ -1,13 +1,10 @@
 package com.mengstudy.boot.tx.saga.provider.rest;
 
-import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
-import com.mengstudy.boot.tx.saga.provider.rest.SagaFailedRequest;
-import com.mengstudy.boot.tx.saga.provider.rest.SagaListResult;
-import com.mengstudy.boot.tx.saga.provider.rest.SagaRequest;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils;
 import com.mengstudy.boot.tx.saga.interceptor.SubTransactionContext;
+import com.mengstudy.boot.tx.saga.provider.AbstractSimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +18,7 @@ import java.util.Map;
  *
  * @author gary.fu
  */
-public class RestSimpleTransactionProviderImpl implements SimpleTransactionProvider {
+public class RestSimpleTransactionProviderImpl extends AbstractSimpleTransactionProvider {
 
     @Getter
     @Setter
