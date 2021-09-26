@@ -1,6 +1,7 @@
 package com.mengstudy.boot.tx.saga.provider;
 
 import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionCancelProvider;
+import com.mengstudy.boot.tx.saga.constant.SimpleTransactionConstant;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import lombok.Getter;
@@ -22,8 +23,17 @@ public abstract class AbstractSimpleTransactionProvider implements SimpleTransac
     protected SimpleTransactionCancelProvider simpleTransactionCancelProvider;
 
     protected boolean cancelSimpleTransaction(SagaSimpleTransaction transaction, List<SagaSimpleSubTransaction> subTransactions) {
-        boolean result = simpleTransactionCancelProvider.cancelSimpleTransaction(transaction, subTransactions);
-        this.updateSimpleTransaction(transaction);
+        boolean result = false;
+        try {
+            result = simpleTransactionCancelProvider.cancelSimpleTransaction(transaction, subTransactions);
+        } finally {
+            if (transaction.getRetryTimes() < simpleTransactionCancelProvider.getRetryTimes()) {
+                transaction.setStatus(SimpleTransactionConstant.STATUS_CANCEL_FAILED0);
+            } else {
+                transaction.setStatus(SimpleTransactionConstant.STATUS_CANCEL_FAILED);
+            }
+            this.updateSimpleTransaction(transaction);
+        }
         return result;
     }
 }

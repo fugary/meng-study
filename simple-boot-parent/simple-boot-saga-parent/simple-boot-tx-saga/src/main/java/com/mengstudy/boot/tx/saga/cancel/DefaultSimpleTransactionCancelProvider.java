@@ -35,10 +35,10 @@ public class DefaultSimpleTransactionCancelProvider implements SimpleTransaction
         if (SimpleTransactionUtils.isTransactionEnded(transaction)) {
             return true;
         }
+        transaction.setRetryTimes(transaction.getRetryTimes() + 1);
         List<SagaSimpleSubTransaction> subTransactions = new ArrayList<>(sagaSubTransactions);
         subTransactions.sort(Comparator.comparing(SagaSimpleSubTransaction::getIdxNo).reversed());
         boolean hasFailedTransaction = false;
-        transaction.setRetryTimes(transaction.getRetryTimes() + 1);
         for (SagaSimpleSubTransaction subTransaction : subTransactions) {
             boolean subSuccess = this.cancelSubTransaction(transaction, subTransaction);
             if (!subSuccess) {

@@ -4,11 +4,10 @@ import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -18,14 +17,13 @@ import java.util.Set;
  * @author gary.fu
  */
 @AllArgsConstructor
+@Getter
+@Setter
+@Slf4j
 public class SimpleTransactionCancelTask implements Runnable {
 
-    @Getter
-    @Setter
     private SimpleTransactionProvider simpleTransactionProvider;
 
-    @Getter
-    @Setter
     private Set<String> transactionKeys;
 
     @Override
@@ -33,7 +31,11 @@ public class SimpleTransactionCancelTask implements Runnable {
         List<SagaSimpleTransaction> transactions = simpleTransactionProvider.loadFailed(new ArrayList<>(transactionKeys));
         for (SagaSimpleTransaction transaction : transactions) {
             // 回滚事务
-            simpleTransactionProvider.cancelSimpleTransaction(transaction);
+            try {
+                simpleTransactionProvider.cancelSimpleTransaction(transaction);
+            } catch (Exception e) {
+                log.error("执行cancel任务失败", e);
+            }
         }
     }
 }

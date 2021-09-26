@@ -13,6 +13,13 @@ import java.util.List;
 public interface SimpleTransactionCancelProvider {
 
     /**
+     * 重试次数
+     *
+     * @return
+     */
+    Integer getRetryTimes();
+
+    /**
      * 回滚主事务
      *
      * @param transaction
