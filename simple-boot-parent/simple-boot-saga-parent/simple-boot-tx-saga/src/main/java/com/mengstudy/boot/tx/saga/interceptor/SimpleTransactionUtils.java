@@ -82,15 +82,20 @@ public class SimpleTransactionUtils {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    /**
+     * 计算Key，格式ClassName#methodName(paramTypes)
+     *
+     * @param clazz
+     * @param method
+     * @param <T>
+     * @return
+     */
     public static <T> String getTxKey(Class<T> clazz, Method method) {
-        return clazz.getName() + "#" + method.getName();
-    }
-
-    public static String getMethodKey(Method method) {
-        StringBuilder sb = new StringBuilder(method.getName());
-        for (Class<?> parameterType : method.getParameterTypes()) {
-            sb.append("$").append(parameterType.getName());
-        }
+        StringBuilder sb = new StringBuilder(clazz.getName());
+        sb.append("#").append(method.getName());
+        String paramTypeStr = Arrays.stream(method.getParameterTypes())
+                .map(Class::getSimpleName).collect(Collectors.joining(",", "(", ")"));
+        sb.append(paramTypeStr);
         return sb.toString();
     }
 
@@ -128,11 +133,9 @@ public class SimpleTransactionUtils {
         sagaSubTransaction.setIdxNo(currentContext.getSubIndex().getAndIncrement());
         String txKey = getTxKey(targetClass, method);
         sagaSubTransaction.setTxKey(txKey);
-        String methodKey = getMethodKey(method);
-        SimpleSagaMeta sageMeta = SimpleTransactionMetaHelper.getSageMeta(txKey, methodKey);
+        SimpleSagaMeta sageMeta = SimpleTransactionMetaHelper.getSageMeta(txKey);
         sagaSubTransaction.setServiceName(sageMeta.getServiceName());
         sagaSubTransaction.setServiceClazz(sageMeta.getServiceClass());
-        sagaSubTransaction.setMethodKey(sageMeta.getMethodKey());
         sagaSubTransaction.setCancelMethod(sageMeta.getCancelMethod());
         List<String> typeList = Arrays.stream(method.getParameterTypes()).map(Class::getName).collect(Collectors.toList());
         sagaSubTransaction.setParamClazz(toJson(typeList));
@@ -210,7 +213,7 @@ public class SimpleTransactionUtils {
      * @param transaction
      * @return
      */
-    public static boolean isTransactionEnded(BaseSimpleTransaction transaction){
+    public static boolean isTransactionEnded(BaseSimpleTransaction transaction) {
         return SimpleTransactionConstant.STATUS_SUCCESS.equals(transaction.getStatus())
                 || SimpleTransactionConstant.STATUS_CANCEL_FAILED.equals(transaction.getStatus())
                 || SimpleTransactionConstant.STATUS_CANCELED.equals(transaction.getStatus());
@@ -222,7 +225,7 @@ public class SimpleTransactionUtils {
      * @param transaction
      * @return
      */
-    public static boolean isTransactionCancelEnded(BaseSimpleTransaction transaction){
+    public static boolean isTransactionCancelEnded(BaseSimpleTransaction transaction) {
         return SimpleTransactionConstant.STATUS_CANCEL_FAILED.equals(transaction.getStatus())
                 || SimpleTransactionConstant.STATUS_CANCELED.equals(transaction.getStatus());
     }
@@ -233,7 +236,7 @@ public class SimpleTransactionUtils {
      * @param transaction
      * @return
      */
-    public static boolean isTransactionNeedCancel(BaseSimpleTransaction transaction){
+    public static boolean isTransactionNeedCancel(BaseSimpleTransaction transaction) {
         return SimpleTransactionConstant.STATUS_FAILED.equals(transaction.getStatus())
                 || SimpleTransactionConstant.STATUS_CANCEL_FAILED0.equals(transaction.getStatus());
     }

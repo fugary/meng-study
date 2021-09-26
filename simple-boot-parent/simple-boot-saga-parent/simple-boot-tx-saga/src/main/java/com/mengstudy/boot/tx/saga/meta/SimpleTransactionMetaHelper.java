@@ -16,9 +16,9 @@ public class SimpleTransactionMetaHelper {
 
     private static final List<SimpleSagaMeta> METAS = new CopyOnWriteArrayList<>();
 
-    public static SimpleSagaMeta getSageMeta(String serviceKey, String methodKey) {
+    public static SimpleSagaMeta getSageMeta(String serviceKey) {
         for (SimpleSagaMeta meta : METAS) {
-            if (Objects.equals(serviceKey, meta.getServiceKey()) && Objects.equals(meta.getMethodKey(), methodKey)) {
+            if (Objects.equals(serviceKey, meta.getServiceKey())) {
                 return meta;
             }
         }

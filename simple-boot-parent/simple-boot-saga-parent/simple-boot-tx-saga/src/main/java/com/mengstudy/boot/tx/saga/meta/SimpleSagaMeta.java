@@ -13,8 +13,6 @@ public class SimpleSagaMeta {
 
     private String serviceKey;
 
-    private String methodKey;
-
     private String serviceName;
 
     private String serviceClass;

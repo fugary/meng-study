@@ -24,7 +24,7 @@ public class DemoService {
 
     @SimpleTransactional
     public String doSomething() {
-        demoService1.demo1();
+        demoService1.demo1("test");
         demoService2.demo2();
         boolean error = new Random().nextBoolean();
         if (error) {

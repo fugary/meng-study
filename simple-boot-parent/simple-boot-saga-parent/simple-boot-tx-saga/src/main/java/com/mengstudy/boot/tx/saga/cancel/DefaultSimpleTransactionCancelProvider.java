@@ -35,6 +35,7 @@ public class DefaultSimpleTransactionCancelProvider implements SimpleTransaction
         if (SimpleTransactionUtils.isTransactionEnded(transaction)) {
             return true;
         }
+        log.info("Canceling transaction [{}/{}]", transaction.getTxId(), transaction.getTxKey());
         transaction.setRetryTimes(transaction.getRetryTimes() + 1);
         List<SagaSimpleSubTransaction> subTransactions = new ArrayList<>(sagaSubTransactions);
         subTransactions.sort(Comparator.comparing(SagaSimpleSubTransaction::getIdxNo).reversed());
@@ -62,19 +63,23 @@ public class DefaultSimpleTransactionCancelProvider implements SimpleTransaction
         if (SimpleTransactionUtils.isTransactionCancelEnded(subTransaction)) {
             return true;
         }
-        SimpleSagaMeta simpleSagaMeta = SimpleTransactionMetaHelper.getSageMeta(subTransaction.getTxKey(), subTransaction.getMethodKey());
+        log.info("Canceling sub transaction [{}/{}/{}]", subTransaction.getTxId(), subTransaction.getSubTxId(), subTransaction.getTxKey());
+        SimpleSagaMeta simpleSagaMeta = SimpleTransactionMetaHelper.getSageMeta(subTransaction.getTxKey());
         boolean result = false;
         if (simpleSagaMeta != null) {
             Object targetBean = simpleSagaMeta.getTargetBean();
             try {
-                Method method = Class.forName(simpleSagaMeta.getServiceClass()).getMethod(subTransaction.getCancelMethod());
-                List<String> paramTypes = fromJson(subTransaction.getParamClazz(), List.class);
+                List<String> paramTypeStrs = fromJson(subTransaction.getParamClazz(), List.class);
                 List<String> paramDataList = fromJson(subTransaction.getParamData(), List.class);
+                List<Class<?>> paramTypes = new ArrayList<>();
                 List<Object> params = new ArrayList<>();
                 for (int i = 0; i < paramDataList.size(); i++) {
-                    Class<?> paramClass = Class.forName(paramTypes.get(i));
+                    Class<?> paramClass = Class.forName(paramTypeStrs.get(i));
+                    paramTypes.add(paramClass);
                     params.add(fromJson(paramDataList.get(i), paramClass));
                 }
+                Method method = Class.forName(simpleSagaMeta.getServiceClass()).getMethod(subTransaction.getCancelMethod(),
+                        paramTypes.toArray(new Class[0]));
                 method.invoke(targetBean, params.toArray());
                 result = true;
                 subTransaction.setStatus(SimpleTransactionConstant.STATUS_SUCCESS);

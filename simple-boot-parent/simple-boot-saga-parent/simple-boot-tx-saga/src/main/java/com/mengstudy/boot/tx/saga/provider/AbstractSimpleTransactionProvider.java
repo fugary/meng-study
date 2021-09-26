@@ -26,12 +26,13 @@ public abstract class AbstractSimpleTransactionProvider implements SimpleTransac
         boolean result = false;
         try {
             result = simpleTransactionCancelProvider.cancelSimpleTransaction(transaction, subTransactions);
-        } finally {
+        } catch (Exception e) {
             if (transaction.getRetryTimes() < simpleTransactionCancelProvider.getRetryTimes()) {
                 transaction.setStatus(SimpleTransactionConstant.STATUS_CANCEL_FAILED0);
             } else {
                 transaction.setStatus(SimpleTransactionConstant.STATUS_CANCEL_FAILED);
             }
+            transaction.setMessage(e.getMessage());
             this.updateSimpleTransaction(transaction);
         }
         return result;

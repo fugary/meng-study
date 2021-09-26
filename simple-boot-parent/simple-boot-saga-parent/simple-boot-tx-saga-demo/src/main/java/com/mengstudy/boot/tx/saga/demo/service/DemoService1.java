@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 public class DemoService1 {
 
     @SimpleSaga(cancelMethod = "cancelDemo1")
-    public void demo1(){
-        log.info("demo1................");
+    public void demo1(String input){
+        log.info("execute demo1................" + input);
     }
 
-    public void cancelDemo1(){
-        log.info("cancel demo1");
+    public void cancelDemo1(String input){
+        log.info("cancel demo1................." + input);
     }
 }
