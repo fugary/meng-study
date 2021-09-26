@@ -1,6 +1,6 @@
 package com.mengstudy.boot.tx.saga.provider;
 
-import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionRollbackProvider;
+import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionCancelProvider;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import lombok.Getter;
@@ -19,10 +19,11 @@ public abstract class AbstractSimpleTransactionProvider implements SimpleTransac
 
     @Getter
     @Setter
-    protected SimpleTransactionRollbackProvider simpleTransactionRollbackProvider;
+    protected SimpleTransactionCancelProvider simpleTransactionCancelProvider;
 
     protected boolean cancelSimpleTransaction(SagaSimpleTransaction transaction, List<SagaSimpleSubTransaction> subTransactions) {
-        simpleTransactionRollbackProvider.rollbackSimpleTransaction(transaction, subTransactions);
-        return true;
+        boolean result = simpleTransactionCancelProvider.cancelSimpleTransaction(transaction, subTransactions);
+        this.updateSimpleTransaction(transaction);
+        return result;
     }
 }

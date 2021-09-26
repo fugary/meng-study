@@ -1,7 +1,7 @@
 package com.mengstudy.boot.tx.saga.demo.config;
 
-import com.mengstudy.boot.tx.saga.cancel.DefaultSimpleTransactionRollbackProvider;
-import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionRollbackProvider;
+import com.mengstudy.boot.tx.saga.cancel.DefaultSimpleTransactionCancelProvider;
+import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionCancelProvider;
 import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionScanner;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleSubTransactionalInterceptor;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionalInterceptor;
@@ -18,14 +18,14 @@ import org.springframework.context.annotation.Configuration;
 public class SimpleTransactionConfiguration {
 
     @Bean
-    public SimpleTransactionRollbackProvider simpleTransactionRollbackProvider() {
-        return new DefaultSimpleTransactionRollbackProvider();
+    public SimpleTransactionCancelProvider simpleTransactionRollbackProvider() {
+        return new DefaultSimpleTransactionCancelProvider();
     }
 
     @Bean
     public SimpleTransactionProvider simpleTransactionProvider() {
         InMemorySimpleTransactionProviderImpl simpleTransactionProvider = new InMemorySimpleTransactionProviderImpl();
-        simpleTransactionProvider.setSimpleTransactionRollbackProvider(simpleTransactionRollbackProvider());
+        simpleTransactionProvider.setSimpleTransactionCancelProvider(simpleTransactionRollbackProvider());
         return simpleTransactionProvider;
     }
 

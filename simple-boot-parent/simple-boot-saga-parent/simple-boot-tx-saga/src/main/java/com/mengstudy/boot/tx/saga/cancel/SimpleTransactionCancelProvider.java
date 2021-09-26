@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author gary.fu
  */
-public interface SimpleTransactionRollbackProvider {
+public interface SimpleTransactionCancelProvider {
 
     /**
      * 回滚主事务
@@ -18,13 +18,14 @@ public interface SimpleTransactionRollbackProvider {
      * @param transaction
      * @param subTransactions
      */
-    void rollbackSimpleTransaction(SagaSimpleTransaction transaction, List<SagaSimpleSubTransaction> subTransactions);
+    boolean cancelSimpleTransaction(SagaSimpleTransaction transaction, List<SagaSimpleSubTransaction> subTransactions);
 
     /**
      * 回滚子事务
      *
+     * @param transaction
      * @param simpleSubTransaction
      */
-    void rollbackSubTransaction(SagaSimpleSubTransaction simpleSubTransaction);
+    boolean cancelSubTransaction(SagaSimpleTransaction transaction, SagaSimpleSubTransaction simpleSubTransaction);
 
 }

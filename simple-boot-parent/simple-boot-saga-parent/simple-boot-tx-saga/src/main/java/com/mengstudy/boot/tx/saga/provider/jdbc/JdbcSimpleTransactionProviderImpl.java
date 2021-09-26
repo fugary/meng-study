@@ -52,7 +52,7 @@ public class JdbcSimpleTransactionProviderImpl implements SimpleTransactionProvi
     }
 
     @Override
-    public void markTransactionCanceled(SagaSimpleTransaction simpleTransaction) {
+    public void updateSimpleTransaction(SagaSimpleTransaction simpleTransaction) {
 
     }
 }

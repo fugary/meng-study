@@ -3,6 +3,8 @@ package com.mengstudy.boot.tx.saga.interceptor;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
+import com.mengstudy.boot.tx.saga.constant.SimpleTransactionConstant;
+import com.mengstudy.boot.tx.saga.dto.BaseSimpleTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
@@ -22,6 +24,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.mengstudy.boot.tx.saga.constant.SimpleTransactionConstant.STATUS_PENDING;
+
 /**
  * Created on 2021/9/23 16:26 .<br>
  *
@@ -34,16 +38,6 @@ public class SimpleTransactionUtils {
     private static final ThreadLocal<SimpleTransactionContext> SIMPLE_TRANSACTION_CONTEXT_KEY = new ThreadLocal<>();
 
     private static final ThreadLocal<SubTransactionContext> SUB_TRANSACTION_KEY = new ThreadLocal<>();
-
-    public static final Integer STATUS_PENDING = 0;
-
-    public static final Integer STATUS_SUCCESS = 1;
-
-    public static final Integer STATUS_FAILED = 2;
-
-    public static final Integer STATUS_TIMEOUT = 3;
-
-    public static final Integer STATUS_CANCELED = 9;
 
     private static final ObjectMapper objectMapper;
 
@@ -208,5 +202,39 @@ public class SimpleTransactionUtils {
             log.error("将Json转成对象报错", e);
         }
         return result;
+    }
+
+    /**
+     * 事务终态
+     *
+     * @param transaction
+     * @return
+     */
+    public static boolean isTransactionEnded(BaseSimpleTransaction transaction){
+        return SimpleTransactionConstant.STATUS_SUCCESS.equals(transaction.getStatus())
+                || SimpleTransactionConstant.STATUS_CANCEL_FAILED.equals(transaction.getStatus())
+                || SimpleTransactionConstant.STATUS_CANCELED.equals(transaction.getStatus());
+    }
+
+    /**
+     * 取消事务终态
+     *
+     * @param transaction
+     * @return
+     */
+    public static boolean isTransactionCancelEnded(BaseSimpleTransaction transaction){
+        return SimpleTransactionConstant.STATUS_CANCEL_FAILED.equals(transaction.getStatus())
+                || SimpleTransactionConstant.STATUS_CANCELED.equals(transaction.getStatus());
+    }
+
+    /**
+     * 需要取消事务
+     *
+     * @param transaction
+     * @return
+     */
+    public static boolean isTransactionNeedCancel(BaseSimpleTransaction transaction){
+        return SimpleTransactionConstant.STATUS_FAILED.equals(transaction.getStatus())
+                || SimpleTransactionConstant.STATUS_CANCEL_FAILED0.equals(transaction.getStatus());
     }
 }

@@ -1,5 +1,6 @@
 package com.mengstudy.boot.tx.saga.interceptor;
 
+import com.mengstudy.boot.tx.saga.constant.SimpleTransactionConstant;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
@@ -38,10 +39,10 @@ public class SimpleSubTransactionalInterceptor {
         try {
             SimpleTransactionUtils.startSubTransaction(subTransactionContext);
             result = joinPoint.proceed();
-            endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_SUCCESS);
+            endSubTransaction(subTransactionContext, SimpleTransactionConstant.STATUS_SUCCESS);
         } catch (Exception e) {
             log.error("执行事务报错", e);
-            endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_FAILED);
+            endSubTransaction(subTransactionContext, SimpleTransactionConstant.STATUS_FAILED);
             throw e;
         } finally {
             SimpleTransactionUtils.endSubTransaction();

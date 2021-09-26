@@ -12,4 +12,5 @@ import lombok.EqualsAndHashCode;
 @Data
 public class SagaSimpleTransaction extends BaseSimpleTransaction {
 
+    private Integer retryTimes = 0;
 }

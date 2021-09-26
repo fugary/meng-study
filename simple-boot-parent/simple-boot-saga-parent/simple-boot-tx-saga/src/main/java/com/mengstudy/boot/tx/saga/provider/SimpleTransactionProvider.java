@@ -23,5 +23,5 @@ public interface SimpleTransactionProvider {
 
     void cancelSimpleTransaction(SagaSimpleTransaction simpleTransaction);
 
-    void markTransactionCanceled(SagaSimpleTransaction simpleTransaction);
+    void updateSimpleTransaction(SagaSimpleTransaction simpleTransaction);
 }
