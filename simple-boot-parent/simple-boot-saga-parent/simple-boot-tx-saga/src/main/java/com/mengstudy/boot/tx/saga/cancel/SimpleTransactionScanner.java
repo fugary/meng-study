@@ -2,6 +2,7 @@ package com.mengstudy.boot.tx.saga.cancel;
 
 import com.mengstudy.boot.tx.saga.annotation.SimpleSaga;
 import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
+import com.mengstudy.boot.tx.saga.exception.CancelMethodAccessException;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils;
 import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
 import com.mengstudy.boot.tx.saga.meta.SimpleTransactionMetaHelper;
@@ -34,6 +35,9 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     @Getter
+    private SimpleTransactionCancelTask simpleTransactionCancelTask;
+
+    @Getter
     @Setter
     private SimpleTransactionProvider simpleTransactionProvider;
 
@@ -43,11 +47,7 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
 
     @Getter
     @Setter
-    private long period = 30L;
-
-    @Getter
-    @Setter
-    private SimpleTransactionCancelTask simpleTransactionCancelTask;
+    private long period = 10L;
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -73,6 +73,11 @@ public class SimpleTransactionScanner implements BeanPostProcessor {
                         simpleSagaMeta.setCancelMethod(simpleSaga.cancelMethod());
                         simpleSagaMeta.setName(simpleSaga.name());
                         simpleSagaMeta.setTargetBean(bean);
+                        try {
+                            targetClass.getMethod(simpleSaga.cancelMethod(), method.getParameterTypes());
+                        } catch (Exception e) {
+                            throw new CancelMethodAccessException(e);
+                        }
                         SimpleTransactionMetaHelper.addSagaMeta(simpleSagaMeta);
                     }
                 });
