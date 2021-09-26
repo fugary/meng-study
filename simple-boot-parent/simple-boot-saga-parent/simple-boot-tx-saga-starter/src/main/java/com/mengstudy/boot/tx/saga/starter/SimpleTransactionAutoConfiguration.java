@@ -6,9 +6,9 @@ import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionScanner;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleSubTransactionalInterceptor;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionalInterceptor;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
-import com.mengstudy.boot.tx.saga.provider.jdbc.JdbcSimpleTransactionProviderImpl;
 import com.mengstudy.boot.tx.saga.provider.memory.InMemorySimpleTransactionProviderImpl;
-import com.mengstudy.boot.tx.saga.provider.rest.RestSimpleTransactionProviderImpl;
+import com.mengstudy.boot.tx.saga.starter.config.JdbcSimpleTransactionConfiguration;
+import com.mengstudy.boot.tx.saga.starter.config.RestSimpleTransactionConfiguration;
 import com.mengstudy.boot.tx.saga.starter.config.SimpleTransactionConfigProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author Gary Fu
@@ -25,6 +26,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnProperty(value = "simple.transaction.saga.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(SimpleTransactionConfigProperties.class)
+@Import({JdbcSimpleTransactionConfiguration.class, RestSimpleTransactionConfiguration.class})
 public class SimpleTransactionAutoConfiguration {
 
     @Getter
@@ -41,24 +43,6 @@ public class SimpleTransactionAutoConfiguration {
     public SimpleTransactionProvider inMemorySimpleTransactionProvider() {
         InMemorySimpleTransactionProviderImpl simpleTransactionProvider = new InMemorySimpleTransactionProviderImpl();
         simpleTransactionProvider.setSimpleTransactionCancelProvider(simpleTransactionCancelProvider());
-        return simpleTransactionProvider;
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "simple.transaction.saga.provider", havingValue = "JDBC", matchIfMissing = false)
-    public SimpleTransactionProvider jdbcSimpleTransactionProvider() {
-        JdbcSimpleTransactionProviderImpl simpleTransactionProvider = new JdbcSimpleTransactionProviderImpl();
-        simpleTransactionProvider.setSimpleTransactionCancelProvider(simpleTransactionCancelProvider());
-        simpleTransactionProvider.setPageSize(simpleTransactionConfigProperties.getSaga().getPageSize());
-        return simpleTransactionProvider;
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "simple.transaction.saga.provider", havingValue = "REST", matchIfMissing = false)
-    public SimpleTransactionProvider restSimpleTransactionProvider() {
-        RestSimpleTransactionProviderImpl simpleTransactionProvider = new RestSimpleTransactionProviderImpl();
-        simpleTransactionProvider.setSimpleTransactionCancelProvider(simpleTransactionCancelProvider());
-        simpleTransactionProvider.setPageSize(simpleTransactionConfigProperties.getSaga().getPageSize());
         return simpleTransactionProvider;
     }
 
