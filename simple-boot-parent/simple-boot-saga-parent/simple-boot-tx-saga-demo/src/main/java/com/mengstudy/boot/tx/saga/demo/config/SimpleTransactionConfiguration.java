@@ -1,10 +1,12 @@
 package com.mengstudy.boot.tx.saga.demo.config;
 
+import com.mengstudy.boot.tx.saga.cancel.DefaultSimpleTransactionRollbackProvider;
+import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionRollbackProvider;
 import com.mengstudy.boot.tx.saga.cancel.SimpleTransactionScanner;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleSubTransactionalInterceptor;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionalInterceptor;
-import com.mengstudy.boot.tx.saga.provider.memory.InMemorySimpleTransactionProviderImpl;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
+import com.mengstudy.boot.tx.saga.provider.memory.InMemorySimpleTransactionProviderImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,26 +18,33 @@ import org.springframework.context.annotation.Configuration;
 public class SimpleTransactionConfiguration {
 
     @Bean
-    public SimpleTransactionProvider simpleTransactionProvider(){
-        return new InMemorySimpleTransactionProviderImpl();
+    public SimpleTransactionRollbackProvider simpleTransactionRollbackProvider() {
+        return new DefaultSimpleTransactionRollbackProvider();
     }
 
     @Bean
-    public SimpleTransactionalInterceptor simpleTransactionalInterceptor(){
+    public SimpleTransactionProvider simpleTransactionProvider() {
+        InMemorySimpleTransactionProviderImpl simpleTransactionProvider = new InMemorySimpleTransactionProviderImpl();
+        simpleTransactionProvider.setSimpleTransactionRollbackProvider(simpleTransactionRollbackProvider());
+        return simpleTransactionProvider;
+    }
+
+    @Bean
+    public SimpleTransactionalInterceptor simpleTransactionalInterceptor() {
         SimpleTransactionalInterceptor simpleTransactionalInterceptor = new SimpleTransactionalInterceptor();
         simpleTransactionalInterceptor.setSimpleTransactionProvider(simpleTransactionProvider());
         return simpleTransactionalInterceptor;
     }
 
     @Bean
-    public SimpleSubTransactionalInterceptor simpleSubTransactionalInterceptor(){
+    public SimpleSubTransactionalInterceptor simpleSubTransactionalInterceptor() {
         SimpleSubTransactionalInterceptor simpleSubTransactionalInterceptor = new SimpleSubTransactionalInterceptor();
         simpleSubTransactionalInterceptor.setSimpleTransactionProvider(simpleTransactionProvider());
         return simpleSubTransactionalInterceptor;
     }
 
     @Bean
-    public SimpleTransactionScanner simpleTransactionScanner(){
+    public SimpleTransactionScanner simpleTransactionScanner() {
         SimpleTransactionScanner simpleTransactionScanner = new SimpleTransactionScanner();
         simpleTransactionScanner.setSimpleTransactionProvider(simpleTransactionProvider());
         return simpleTransactionScanner;

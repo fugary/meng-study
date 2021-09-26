@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Random;
+
 /**
  * @author Gary Fu
  * @date 2021/9/25 14:45
@@ -13,19 +15,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class DemoService {
 
-    @Autowired
     @Getter
-    @Setter
+    @Setter(onMethod_ = {@Autowired})
     private DemoService1 demoService1;
-    @Autowired
     @Getter
-    @Setter
+    @Setter(onMethod_ = {@Autowired})
     private DemoService2 demoService2;
 
     @SimpleTransactional
     public String doSomething() {
         demoService1.demo1();
         demoService2.demo2();
+        boolean error = new Random().nextBoolean();
+        if (error) {
+            throw new RuntimeException("test");
+        }
         return "hello world";
     }
 }

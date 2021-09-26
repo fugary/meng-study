@@ -4,12 +4,11 @@ import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 
 import java.lang.reflect.Method;
@@ -21,9 +20,8 @@ import java.util.Date;
  * @author gary.fu
  */
 @Aspect
+@Slf4j
 public class SimpleSubTransactionalInterceptor {
-
-    private static final Logger logger = LoggerFactory.getLogger(SimpleSubTransactionalInterceptor.class);
 
     @Getter
     @Setter
@@ -42,7 +40,7 @@ public class SimpleSubTransactionalInterceptor {
             result = joinPoint.proceed();
             endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_SUCCESS);
         } catch (Exception e) {
-            logger.error("执行事务报错", e);
+            log.error("执行事务报错", e);
             endSubTransaction(subTransactionContext, SimpleTransactionUtils.STATUS_FAILED);
             throw e;
         } finally {
@@ -65,7 +63,7 @@ public class SimpleSubTransactionalInterceptor {
             try {
                 simpleTransactionProvider.recordSubTransaction(subTransactionContext);
             } catch (Exception e) {
-                logger.error("[框架]:结束事务报错", e);
+                log.error("[框架]:结束事务报错", e);
             }
         }
     }

@@ -3,16 +3,15 @@ package com.mengstudy.boot.tx.saga.interceptor;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mengstudy.boot.tx.saga.annotation.SimpleTransactional;
-import com.mengstudy.boot.tx.saga.provider.rest.SagaRequest;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
-import com.mengstudy.boot.tx.saga.provider.rest.SagaSubRequest;
 import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
 import com.mengstudy.boot.tx.saga.meta.SimpleTransactionMetaHelper;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaRequest;
+import com.mengstudy.boot.tx.saga.provider.rest.SagaSubRequest;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
@@ -29,9 +28,8 @@ import java.util.stream.Collectors;
  * @author gary.fu
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class SimpleTransactionUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(SimpleTransactionUtils.class);
 
     private static final ThreadLocal<SimpleTransactionContext> SIMPLE_TRANSACTION_CONTEXT_KEY = new ThreadLocal<>();
 
@@ -181,7 +179,6 @@ public class SimpleTransactionUtils {
     /**
      * 转换成Json
      *
-     * @param mapper
      * @param target
      * @return
      */
@@ -190,7 +187,7 @@ public class SimpleTransactionUtils {
         try {
             result = objectMapper.writeValueAsString(target);
         } catch (IOException e) {
-            logger.error("将对象转换成Json出错", e);
+            log.error("将对象转换成Json出错", e);
         }
         return result;
     }
@@ -198,7 +195,6 @@ public class SimpleTransactionUtils {
     /**
      * 解析Json成对象
      *
-     * @param mapper
      * @param json
      * @param clazz
      * @param <T>
@@ -209,7 +205,7 @@ public class SimpleTransactionUtils {
         try {
             result = objectMapper.readValue(json, clazz);
         } catch (IOException e) {
-            logger.error("将Json转成对象报错", e);
+            log.error("将Json转成对象报错", e);
         }
         return result;
     }

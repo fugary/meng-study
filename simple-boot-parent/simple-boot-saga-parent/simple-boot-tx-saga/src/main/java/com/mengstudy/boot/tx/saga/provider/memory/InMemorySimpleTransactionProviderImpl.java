@@ -1,20 +1,15 @@
 package com.mengstudy.boot.tx.saga.provider.memory;
 
-import com.mengstudy.boot.tx.saga.dto.SagaSimpleSubTransaction;
 import com.mengstudy.boot.tx.saga.dto.SagaSimpleTransaction;
 import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionContext;
-import com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils;
 import com.mengstudy.boot.tx.saga.interceptor.SubTransactionContext;
-import com.mengstudy.boot.tx.saga.meta.SimpleSagaMeta;
-import com.mengstudy.boot.tx.saga.meta.SimpleTransactionMetaHelper;
-import com.mengstudy.boot.tx.saga.provider.SimpleTransactionProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import com.mengstudy.boot.tx.saga.provider.AbstractSimpleTransactionProvider;
+import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -24,9 +19,8 @@ import static com.mengstudy.boot.tx.saga.interceptor.SimpleTransactionUtils.*;
  * @author Gary Fu
  * @date 2021/9/25 14:53
  */
-public class InMemorySimpleTransactionProviderImpl implements SimpleTransactionProvider {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(InMemorySimpleTransactionProviderImpl.class);
+@Slf4j
+public class InMemorySimpleTransactionProviderImpl extends AbstractSimpleTransactionProvider {
 
     private Map<String, MemorySimpleTransaction> transactionMap = new ConcurrentHashMap<>();
 
@@ -67,36 +61,15 @@ public class InMemorySimpleTransactionProviderImpl implements SimpleTransactionP
 
     @Override
     public void cancelSimpleTransaction(SagaSimpleTransaction transaction) {
-        MemorySimpleTransaction simpleTransaction = transactionMap.get(transaction.getTxId());
-        if (simpleTransaction != null) {
-            List<SagaSimpleSubTransaction> subTransactions = new ArrayList<>(simpleTransaction.getSubTransactions());
-            subTransactions.sort(Comparator.comparing(SagaSimpleSubTransaction::getIdxNo).reversed());
-            for (SagaSimpleSubTransaction subTransaction : subTransactions) {
-                this.cancelSubTransaction(subTransaction);
+        MemorySimpleTransaction memoryTransaction = transactionMap.get(transaction.getTxId());
+        if (memoryTransaction != null) {
+            boolean result = super.cancelSimpleTransaction(transaction, memoryTransaction.getSubTransactions());
+            if (result) {
+                this.markTransactionCanceled(transaction);
             }
-            this.markTransactionCanceled(transaction);
         }
     }
 
-    protected void cancelSubTransaction(SagaSimpleSubTransaction subTransaction) {
-        SimpleSagaMeta simpleSagaMeta = SimpleTransactionMetaHelper.getSageMeta(subTransaction.getTxKey(), subTransaction.getMethodKey());
-        if (simpleSagaMeta != null) {
-            Object targetBean = simpleSagaMeta.getTargetBean();
-            try {
-                Method method = Class.forName(simpleSagaMeta.getServiceClass()).getMethod(subTransaction.getCancelMethod());
-                List<String> paramTypes = fromJson(subTransaction.getParamClazz(), List.class);
-                List<String> paramDataList = fromJson(subTransaction.getParamData(), List.class);
-                List<Object> params = new ArrayList<>();
-                for (int i = 0; i < paramDataList.size(); i++) {
-                    Class<?> paramClass = Class.forName(paramTypes.get(i));
-                    params.add(fromJson(paramDataList.get(i), paramClass));
-                }
-                method.invoke(targetBean, params.toArray());
-            } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error("查找方法错误", e);
-            }
-        }
-    }
 
     @Override
     public void markTransactionCanceled(SagaSimpleTransaction transaction) {
