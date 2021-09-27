@@ -13,8 +13,8 @@ CREATE TABLE t_simple_sub_transaction
     message       varchar(1024),
     service_name  varchar(1024),
     service_class varchar(1024),
-    param_clazz   varchar(81920),
-    param_data    varchar(81920),
+    param_clazz   text,
+    param_data    text,
     PRIMARY KEY (sub_tx_id)
 );
 CREATE TABLE t_simple_transaction
@@ -48,7 +48,7 @@ CREATE TABLE t_simple_transaction_log
     lock_status         int(10),
     lock_date           timestamp NULL,
     retry_times         int(10),
-    sub_transaction_log varchar(81920),
+    sub_transaction_log text,
     PRIMARY KEY (id)
 );
 ALTER TABLE t_simple_sub_transaction
